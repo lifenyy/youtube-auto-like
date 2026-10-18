@@ -1,80 +1,72 @@
-# YouTube 自动点赞（Chrome 扩展）
+# YouTube 自动点赞 / YouTube Auto Like
 
-打开 YouTube 视频时自动点赞：**打开视频 → 检查点赞状态 → 已点赞就跳过 → 未点赞就自动点赞**。
-站内切换视频（含自动播放的下一个视频、Shorts）也会自动处理，不需要手动刷新页面。
+一个 Chrome Manifest V3 扩展：打开 YouTube 视频时自动点赞；已点赞则跳过。
 
-## 功能
+A Chrome Manifest V3 extension that automatically likes YouTube videos when opened. If a video is already liked, it skips the action.
 
-- 打开视频页自动点赞，无需手动确认。
-- 已点赞的视频自动跳过，不会重复点赞。
-- 支持 YouTube 单页切换（点击推荐视频、播放下一个、Shorts 滑动），无需刷新。
-- 同一个视频在本次页面内只处理一次，避免来回抖动或反复点击。
-- 自动判断是否登录：未登录导致点赞失败时给出提示，不会无脑重复点击。
-- 弹窗可查看累计自动点赞次数，可一键开关、调整点赞前等待时间。
+## 功能 / Features
 
-## 安装方法（加载已解压的扩展程序）
+- 打开视频页自动点赞，无需手动确认。 / Automatically likes videos when a watch page opens.
+- 已点赞的视频自动跳过，不会重复点赞。 / Skips videos that are already liked.
+- 支持 YouTube 单页切换（推荐视频、自动播放、Shorts），无需刷新。 / Supports YouTube SPA navigation, autoplay, and Shorts without reloading.
+- 同一个视频在本次页面内只处理一次。 / Processes each video only once per page session.
+- 未登录导致点赞失败时给出提示。 / Shows a notice when login is required for liking.
+- 弹窗可查看累计自动点赞次数，可开关、调整等待时间。 / Popup shows total automatic likes, with on/off and delay controls.
 
-1. 解压 `youtube-auto-like-v1.0.0.zip`，得到一个 `youtube-auto-like` 文件夹。
-2. 打开 Chrome，在地址栏输入 `chrome://extensions/` 并回车。
-3. 打开右上角的「开发者模式」开关。
-4. 点击左上角「加载已解压的扩展程序」。
-5. 选择解压出来的 `youtube-auto-like` 文件夹（含 `manifest.json` 的那一层）。
-6. 安装完成，工具栏出现红色点赞图标。
+## 安装 / Installation
 
-> 提示：如果图标被收进「扩展程序」菜单里，点一下拼图图标，把本扩展固定到工具栏更方便查看状态。
+1. 下载仓库源码或 ZIP。 / Download the repository source or ZIP.
+2. 打开 `chrome://extensions/`。 / Open `chrome://extensions/`.
+3. 开启右上角「开发者模式」。 / Enable Developer mode.
+4. 点击「加载已解压的扩展程序」。 / Click "Load unpacked".
+5. 选择包含 `manifest.json` 的目录。 / Select the directory containing `manifest.json`.
 
-## 使用说明
+## 使用 / Usage
 
-- 安装后无需任何设置，直接打开任意 YouTube 视频即可。
-- 视频加载完成后，插件会在约 1～2 秒内自动点赞，左下角出现「已自动点赞 👍」提示。
-- 已经是点赞状态的视频不会重复点击，不会有任何提示。
-- 点击工具栏图标打开弹窗，可以：
-  - 「开启自动点赞」：总开关。
-  - 「点赞前等待」：找到点赞按钮后延迟多少毫秒再点击，默认 1200 毫秒；网络慢时可以调大。
-  - 「在页面上显示提示」：是否显示左下角提示。
-  - 「重置统计」：把累计点赞次数清零。
+- 安装后直接打开任意 YouTube 视频即可。 / Open any YouTube video after installation.
+- 视频加载完成后，插件会自动点赞并显示左下角提示。 / The extension likes the video after it loads and shows a bottom-left notice.
+- 点击工具栏图标可以开关自动点赞、调整等待时间、重置统计。 / Use the toolbar popup to toggle automatic liking, adjust delay, or reset statistics.
 
-## 工作原理
+## 工作原理 / How it works
 
-1. 内容脚本 `content.js` 注入 YouTube 页面，监听 `yt-navigate-finish`、`yt-page-data-updated`、`popstate`，并用 1 秒轮询兜底，捕获单页应用内的视频切换。
-2. 从地址中解析视频 ID（`/watch?v=...` 或 `/shorts/...`），同一视频只处理一次。
-3. 等待点赞按钮出现（最多 8 秒），读取按钮的 `aria-pressed` 属性：
-   - `"true"` → 已点赞，跳过。
-   - `"false"` → 未点赞，延迟后点击，并在 3 秒内校验是否变为已点赞。
-4. 点击后无论成功与否都记录该视频 ID，避免反复点击。
+1. 内容脚本监听 YouTube 页面导航，并解析 `/watch?v=...` 或 `/shorts/...` 中的视频 ID。 / The content script listens for navigation and extracts the video ID from the URL.
+2. 等待点赞按钮出现并读取 `aria-pressed`。 / Waits for the Like button and reads `aria-pressed`.
+3. 已点赞则跳过；未点赞则延迟后点击，并校验结果。 / Already liked videos are skipped; otherwise the button is clicked after a delay and verified.
 
-## 文件结构
+## 文件结构 / File structure
 
 ```
 youtube-auto-like/
-├── manifest.json     # 扩展清单（Manifest V3）
-├── background.js     # Service Worker，首次安装写入默认设置
-├── content.js        # 核心逻辑：检测视频、判断点赞状态、自动点赞
-├── content.css       # 左下角提示样式
-├── popup.html        # 弹窗界面
-├── popup.css         # 弹窗样式
-├── popup.js          # 弹窗逻辑（开关、延迟、统计）
-├── icons/            # 扩展图标 16/32/48/128
+├── manifest.json     # Manifest V3
+├── background.js     # Service Worker
+├── content.js        # Video detection and auto-like logic
+├── content.css       # Notice styles
+├── popup.html        # Popup UI
+├── popup.css         # Popup styles
+├── popup.js          # Popup logic
+├── icon16.png        # Extension icon 16px
+├── icon32.png        # Extension icon 32px
+├── icon48.png        # Extension icon 48px
+├── icon128.png       # Extension icon 128px
 └── README.md
 ```
 
-## 常见问题
+## 权限 / Permissions
 
-**打开视频没有自动点赞？**
-- 确认扩展已启用，且在弹窗里打开了「开启自动点赞」。
-- 确认已登录 YouTube。未登录时 YouTube 不允许点赞，插件会提示「自动点赞失败，可能未登录 YouTube」。
-- 刷新一次视频页面后重试；如果 YouTube 改版导致选择器失效，可在 `content.js` 的 `LIKE_SELECTORS` 中补充新的选择器。
+- `storage`: 保存开关、延迟和统计。 / Stores settings, delay, and statistics.
+- `*://*.youtube.com/*`: 仅在 YouTube 页面运行。 / Runs only on YouTube pages.
 
-**会不会把「不喜欢」也点掉？**
-不会。脚本会排除 `dislike-button-view-model`、`#segmented-dislike-button`、`#dislike-button` 以及 aria-label 含 dislike/不喜欢 的按钮。
+## 常见问题 / FAQ
 
-**会不会对我的账号有风险？**
-插件只是模拟你点击点赞按钮，不读取、不上传任何数据，也不调用 YouTube 的非公开接口；所有设置和统计只保存在浏览器本地。
+**打开视频没有自动点赞？ / No automatic like?**
+确认扩展已启用、弹窗中的开关已打开，并且已登录 YouTube。刷新视频页面后重试。 / Make sure the extension is enabled, the popup toggle is on, and you are logged in to YouTube. Refresh the video page and try again.
 
-**权限说明**
-- `storage`：保存开关、延迟、统计。
-- `*://*.youtube.com/*`：仅在 YouTube 页面运行。
+**会不会点击「不喜欢」？ / Does it click Dislike?**
+不会。脚本会排除所有 dislike/不喜欢 按钮。 / No. The script explicitly excludes dislike buttons.
 
-## 卸载
+**会上传数据吗？ / Does it upload data?**
+不会。设置和统计只保存在浏览器本地。 / No. Settings and statistics stay in the local browser storage.
 
-在 `chrome://extensions/` 中找到本扩展，点击「移除」。
+## 卸载 / Uninstall
+
+在 `chrome://extensions/` 中找到本扩展，点击「移除」。 / Find the extension in `chrome://extensions/` and click Remove.
