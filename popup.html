@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube 自动点赞</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <img class="logo" src="icons/icon48.png" alt="" />
+      <div>
+        <h1>YouTube 自动点赞</h1>
+        <p class="subtitle">打开视频自动点赞，已点赞自动跳过</p>
+      </div>
+    </header>
+
+    <label class="row switch-row">
+      <span>开启自动点赞</span>
+      <input id="enabled" type="checkbox" />
+    </label>
+
+    <label class="row" for="delay">
+      <span>点赞前等待</span>
+      <span class="value"><input id="delay" type="number" min="0" max="10000" step="100" /> 毫秒</span>
+    </label>
+    <p class="hint">等待时间越短越快点赞，网络较慢时建议 1000 毫秒以上。</p>
+
+    <label class="row switch-row">
+      <span>在页面上显示提示</span>
+      <input id="showToast" type="checkbox" />
+    </label>
+
+    <section class="stats">
+      <div class="stat">
+        <strong id="count">0</strong>
+        <span>累计自动点赞</span>
+      </div>
+      <div class="stat">
+        <strong id="lastAt">—</strong>
+        <span>最近一次</span>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <button id="reset" type="button" class="link-button">重置统计</button>
+      <span class="version">v1.0.0</span>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+.yt-auto-like-toast {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 2147483647;
+  max-width: 320px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(15, 15, 15, 0.92);
+  color: #fff;
+  font: 500 14px/1.4 "YouTube Sans", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.yt-auto-like-toast[data-type="warn"] {
+  background: rgba(180, 40, 40, 0.95);
+}
+
+.yt-auto-like-toast--show {
+  opacity: 1;
+  transform: translateY(0);
+}
